@@ -1,7 +1,14 @@
 
-var emit = require( 'emit-bindings' );
+var emit = require( 'emit-bindings' ),
+    dom = require( 'domla' ),
+    div = dom.div,
+    button = dom.button,
+    form = dom.form,
+    input = dom.input,
+    hr = dom.hr,
+    p = dom.p;
 
-function Upload( attrs ){ 
+function Upload( attrs ){
     this.attributes = attrs;
 }
 
@@ -41,11 +48,11 @@ Upload.prototype = {
     onTrigger: function( e ) {
         this.upload.dispatchEvent( new MouseEvent( 'click' ) ); // proxy event to upload
     },
-    attachListeners: function( ) {
+    render: function( meta, done ) {
 
-        var leaveBuffer,
-            classList = this.dropzone.classList;
-
+        var leaveBuffer, 
+            classList;
+        
         function dragOver() {
             clearTimeout( leaveBuffer );
             if ( classList.contains( 'skoll-upload-drag-over' ) ) return;
@@ -61,52 +68,45 @@ Upload.prototype = {
             if ( classList.remove( 'skoll-upload-show' ) ) return;
             classList.add( 'skoll-upload-show' );
         }
-
-        this.dropzone.addEventListener( 'dragover', dragOver );
-        this.dropzone.addEventListener( 'dragleave', dragLeave );
-        this.dropzone.addEventListener( 'drop', dragLeave );
-
+        
+        this.input = input( { 
+            type: 'url', 
+            value: meta.url || '' 
+        } );
+        this.upload = input( { 
+            className: 'skoll-upload-input', 
+            type: 'file', 
+            onChange: this.onChange.bind( this ) 
+        } );
+        this.dropzone = (
+            div( { className: 'skoll-upload-dropzone', onDragOver: dragOver, onDragLeave: dragLeave, onDrop: dragLeave },
+                p( 'Drop your images here!' ),
+                this.upload
+            )
+        );
+        this.el = (
+            div( { className: 'skoll-upload-plugin' },
+                div( { className: 'skoll-upload-url' },
+                    button( { className: 'skoll-button', 'data-emit': 'skoll.upload.trigger' }, 'Upload A File' ),
+                    p( 'Drag files here to upload' )
+                ),
+                hr(),
+                form( { className: 'skoll-upload-form', 'data-emit': 'skoll.upload.submit' },
+                    p ( 'Use a URL:' ),
+                    this.input,
+                    button( { className: 'skoll-button' }, 'Submit' )
+                ),
+                this.dropzone
+            )
+        );
+        
+        classList = this.dropzone.classList;
         this.skoll.el.removeEventListener( 'dragover', showOver );
         this.skoll.el.addEventListener( 'dragover', showOver );
-
-        this.upload.addEventListener( 'change', this.onChange.bind( this ) );
-
-    },
-    render: function( meta, done ) {
-
-        var html = 
-        '<div class="skoll-upload-url">' + 
-            '<button class="skoll-button" data-emit="skoll.upload.trigger">Upload A File</button>' +
-        '</div>' +
-        '<hr>' +
-        '<form class="skoll-upload-form" data-emit="skoll.upload.submit">' + 
-            '<p>Use a URL:</p>' + 
-            '<input type="url" />' + 
-            '<button class="skoll-button">Submit</button>' +
-        '</form>' +
-        '<div class="skoll-upload-dropzone">' +
-            '<p>Drop you images here!</p>' +
-            '<input class="skoll-upload-input" type="file" />' +
-        '</div>';
-
-        this.el = document.createElement( 'div' );
-        this.el.classList.add( 'skoll-upload-plugin' );
-        this.el.innerHTML = html;
-
-        this.dropzone = this.el.getElementsByClassName( 'skoll-upload-dropzone' )[ 0 ];
-        this.upload = this.dropzone.getElementsByClassName( 'skoll-upload-input' )[ 0 ];
-        this.input = this.el.querySelector( '.skoll-upload-form input' );
-
+        
         if ( meta.multiple ) {
             this.upload.setAttribute( 'multiple', true );
         }
-
-        if ( meta.url ) {
-            this.input.value = meta.url;
-        }
-
-        this.attachListeners( );
-
         done( null, this.el );
     }
 };
