@@ -1,6 +1,6 @@
 {
   "name": "skoll-upload",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The default upload plugin for Skoll",
   "main": "index.js",
   "scripts": {

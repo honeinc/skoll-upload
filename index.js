@@ -80,7 +80,7 @@ Upload.prototype = {
         '</div>' +
         '<hr>' +
         '<form class="skoll-upload-form" data-emit="skoll.upload.submit">' + 
-            '<p>Use a URL:</p>' + 
+            '<p>Use a URL: </p> ' + 
             '<input type="url" />' + 
             '<button class="skoll-button">Submit</button>' +
         '</form>' +
